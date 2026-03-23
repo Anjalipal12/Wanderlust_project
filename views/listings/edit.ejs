@@ -5,7 +5,9 @@
 
     <h3>Edit your Listing</h3>
 
-    <form method="POST" action="/listings/<%= listing._id %>?_method=PUT">
+    <form method="POST" action="/listings/<%= listing._id %>?_method=PUT" novalidate
+      class="needs-validation"
+      >
 
       <div class="mb-3">
         <label class="form-label">Title</label>
@@ -14,15 +16,18 @@
           value="<%= listing.title %>"
           type="text"
           class="form-control"
+          required
         />
+        <div class="valid-feedback">Title look good!</div>
       </div>
 
       <div class="mb-3">
         <label class="form-label">Description</label>
         <textarea
           name="listing[description]"
-          class="form-control"
+          class="form-control" required
         ><%= listing.description %></textarea>
+        <div class="invalid-feedback">Please enter a short description</div>
       </div>
 
       <div class="mb-3">
@@ -32,7 +37,9 @@
           value="<%= listing.image.url %>"
           type="text"
           class="form-control"
+          required
         />
+        <div class="invalid-feedback">Please Enter a Valid link for Image </div>
       </div>
 
       <div class="mb-3">
@@ -42,7 +49,9 @@
           value="<%= listing.price %>"
           type="number"
           class="form-control"
+          required
         />
+        <div class="invalid-feedback">Price Should be valid</div>
       </div>
 
       <div class="mb-3">
@@ -52,7 +61,9 @@
           value="<%= listing.country %>"
           type="text"
           class="form-control"
+          required
         />
+        <div class="invalid-feedback">Country name should be valid </div>
       </div>
 
       <div class="mb-3">
@@ -62,12 +73,13 @@
           value="<%= listing.location %>"
           type="text"
           class="form-control"
+          required
         />
+        <div class="invalid-feedback">location should be valid</div>
       </div>
 
       <button class="btn btn-dark edit-btn mt-3">Edit</button>
-
     </form>
-
   </div>
 </div>
+<script src="/js/script.js"></script>
