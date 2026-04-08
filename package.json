@@ -1,5 +1,38 @@
 {
   "dependencies": {
-    "ejs-mate": "^4.0.0"
-  }
+    "connect-flash": "^0.1.1",
+    "connect-mongo": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.4.1",
+    "ejs": "^5.0.1",
+    "ejs-mate": "^4.0.0",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "joi": "^18.1.1",
+    "method-override": "^3.0.0",
+    "mongoose": "^9.4.1",
+    "multer": "^2.1.1",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
+    "passport-local-mongoose": "^6.1.0"
+  },
+  "name": "wanderlust-main",
+  "version": "1.0.0",
+  "description": "WanderLust is a full-stack web application where users can explore travel destinations and create their own listings.\r Users can view different places, add new listings and manage travel information.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Anjalipal12/Wanderlust_project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Anjalipal12/Wanderlust_project/issues"
+  },
+  "homepage": "https://github.com/Anjalipal12/Wanderlust_project#readme"
 }
