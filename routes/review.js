@@ -1,51 +1,57 @@
-// routes/review.js
-
 const express = require("express");
 const router = express.Router({ mergeParams: true });
+
 const wrapAsync = require("../utils/wrapAsync.js");
 const ExpressError = require("../utils/ExpressError.js");
-const { reviewSchema } = require("../schema.js");
-const Review = require("../models/review.js");
 const Listing = require("../models/listing.js");
+const Review = require("../models/review.js");
 
-// ================= VALIDATION MIDDLEWARE =================
-const validateReview = (req, res, next) => {
-  const { error } = reviewSchema.validate(req.body);
-  if (error) {
-    const errMsg = error.details.map(el => el.message).join(", ");
-    throw new ExpressError(errMsg, 400);
-  }
-  next();
-};
+// ✅ Import middleware correctly
+const { isLoggedIn, validateReview } = require("../middleware.js");
 
-// ================= CREATE REVIEW =================
-router.post("/", validateReview, wrapAsync(async (req, res) => {
-  const listing = await Listing.findById(req.params.id);
-  if (!listing) {
-    req.flash("error", "Listing not found!");
-    return res.redirect("/listings");
-  }
+// ================= ADD REVIEW =================
+// ================= ADD REVIEW =================
+router.post(
+  "/",
+  isLoggedIn,
+  validateReview,
+  wrapAsync(async (req, res) => {
+    const { id } = req.params;
 
-  const newReview = new Review(req.body.review);
-  if (req.user) newReview.author = req.user._id; // optional: track logged-in user
-  listing.reviews.push(newReview);
+    const listing = await Listing.findById(id);
+    if (!listing) {
+      throw new ExpressError(404, "Listing not found");
+    }
 
-  await newReview.save();
-  await listing.save();
+    const review = new Review(req.body.review);
+    review.author = req.user._id;
 
-  req.flash("success", "New Review Created!");
-  res.redirect(`/listings/${listing._id}`);
-}));
+    listing.reviews.push(review);
+
+    await review.save();
+    await listing.save({ validateBeforeSave: false }); // ✅ Yeh fix karo
+
+    req.flash("success", "Review added successfully!");
+    res.redirect(`/listings/${id}`);
+  })
+);
 
 // ================= DELETE REVIEW =================
-router.delete("/:reviewId", wrapAsync(async (req, res) => {
-  const { id, reviewId } = req.params;
+router.delete(
+  "/:reviewId",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const { id, reviewId } = req.params;
 
-  await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
-  await Review.findByIdAndDelete(reviewId);
+    await Listing.findByIdAndUpdate(id, {
+      $pull: { reviews: reviewId },
+    });
 
-  req.flash("success", "Review Deleted!");
-  res.redirect(`/listings/${id}`);
-}));
+    await Review.findByIdAndDelete(reviewId);
+
+    req.flash("success", "Review deleted successfully!");
+    res.redirect(`/listings/${id}`);
+  })
+);
 
 module.exports = router;

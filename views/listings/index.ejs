@@ -1,35 +1,36 @@
 <% layout("/layouts/boilerplate") %>
+
 <style>
 /* Filters */
 #filters {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: 1rem;
 }
 
 .filter {
   text-align: center;
-  margin-right: 2rem;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  transition: 0.3s;
   opacity: 0.7;
 }
 
 .filter:hover {
   opacity: 1;
   cursor: pointer;
+  background-color: #f1f1f1;
 }
 
 /* Tax toggle */
 .tax-toggle {
-  border: solid 1.5px black;
+  border: 1.5px solid #ccc;
   height: 3rem;
   border-radius: 1rem;
   display: flex;
   align-items: center;
-  margin-left: 5rem;
-  padding: 1rem;
-  margin-top: 1rem;
+  padding: 0 1rem;
 }
 
 /* Cards */
@@ -37,11 +38,13 @@
   border-radius: 15px;
   overflow: hidden;
   border: none;
-  transition: 0.3s;
+  transition: all 0.3s ease;
+  background-color: #fff;
 }
 
 .l-card:hover {
   transform: scale(1.03);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 }
 
 /* Image */
@@ -54,31 +57,38 @@
 /* Remove link style */
 .listing-link {
   text-decoration: none;
-  color: black;
+  color: inherit;
+}
+
+/* Text */
+.card-text {
+  font-size: 0.95rem;
 }
 
 /* Tax text */
 .text {
   display: none;
+  color: gray;
+  font-size: 0.85rem;
 }
 </style>
 
 <!-- Filters -->
-<div id="filters">
+<div id="filters" class="mb-3">
   <div class="filter"><i class="fa-solid fa-fire"></i><p>Trending</p></div>
   <div class="filter"><i class="fa-solid fa-bed"></i><p>Rooms</p></div>
   <div class="filter"><i class="fa-solid fa-umbrella-beach"></i><p>Beach</p></div>
   <div class="filter"><i class="fa-solid fa-mountain"></i><p>Mountain</p></div>
   <div class="filter"><i class="fa-solid fa-water-ladder"></i><p>Pools</p></div>
-  <div class="filter"><i class="fa-solid fa-mountain-city"></i><p>Iconic cities</p></div>
+  <div class="filter"><i class="fa-solid fa-mountain-city"></i><p>Cities</p></div>
   <div class="filter"><i class="fa-regular fa-house"></i><p>Farms</p></div>
   <div class="filter"><i class="fa-solid fa-snowflake"></i><p>Arctic</p></div>
   <div class="filter"><i class="fa-solid fa-campground"></i><p>Camping</p></div>
 
-  <div class="tax-toggle">
+  <div class="tax-toggle ms-auto">
     <div class="form-check form-switch">
-      <input class="form-check-input" type="checkbox" id="switchCheckDefault">
-      <label class="form-check-label" for="switchCheckDefault">
+      <input class="form-check-input" type="checkbox" id="taxSwitch">
+      <label class="form-check-label" for="taxSwitch">
         Display total after taxes
       </label>
     </div>
@@ -86,9 +96,14 @@
 </div>
 
 <!-- Listings -->
-<div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 g-4 mt-2">
-  <% for(let listing of allListings){ %>
-    
+<div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 g-4">
+
+  <% if (!listings || listings.length === 0) { %>
+    <h4>No listings available</h4>
+  <% } %>
+
+  <% listings.forEach(listing => { %>
+
     <div class="col">
       <a href="/listings/<%= listing._id %>" class="listing-link">
         
@@ -105,8 +120,12 @@
           <div class="card-body">
             <p class="card-text">
               <b><%= listing.title %></b><br>
-              ₹ <%= listing.price.toLocaleString("en-IN") %> / night
-              <span class="text"> +18% GST</span>
+
+              ₹ <%= listing.price ? listing.price.toLocaleString("en-IN") : "N/A" %> / night
+              
+              <span class="text">
+                (₹ <%= listing.price ? (listing.price * 1.18).toLocaleString("en-IN") : "" %> with tax)
+              </span>
             </p>
           </div>
 
@@ -115,22 +134,21 @@
       </a>
     </div>
 
-  <% } %>
+  <% }) %>
+
 </div>
 
 <!-- Script -->
 <script>
-  let taxSwitch = document.getElementById("switchCheckDefault");
+  const taxSwitch = document.getElementById("taxSwitch");
 
-  taxSwitch.addEventListener("click", () => {
-    let taxInfo = document.getElementsByClassName("text");
+  if (taxSwitch) {
+    taxSwitch.addEventListener("change", () => {
+      const taxInfo = document.querySelectorAll(".text");
 
-    for (let info of taxInfo) {
-      if (info.style.display !== "inline") {
-        info.style.display = "inline";
-      } else {
-        info.style.display = "none";
-      }
-    }
-  });
+      taxInfo.forEach(info => {
+        info.style.display = taxSwitch.checked ? "inline" : "none";
+      });
+    });
+  }
 </script>

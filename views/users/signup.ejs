@@ -2,10 +2,11 @@
 
 <style>
     .signup-wrapper {
-        min-height: 80vh;
+        min-height: 90vh;
         display: flex;
         align-items: center;
         justify-content: center;
+        background-color: #f8f9fa;
     }
 
     .signup-card {
@@ -15,12 +16,14 @@
         border: 1px solid #ddd;
         border-radius: 16px;
         background: #fff;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1); /* NEW */
     }
 
     .signup-card h2 {
         font-weight: 700;
         margin-bottom: 1.5rem;
         color: #2d2d2d;
+        text-align: center; /* NEW */
     }
 
     .signup-card .form-control {
@@ -45,14 +48,14 @@
         border-radius: 10px;
         font-size: 1rem;
         font-weight: 600;
-        background-color: #198754;
+        background: linear-gradient(135deg, #198754, #157347); /* UPDATED */
         border: none;
         color: white;
-        transition: background 0.3s;
+        transition: 0.3s;
     }
 
     .btn-signup:hover {
-        background-color: #157347;
+        opacity: 0.9;
     }
 
     .login-link {

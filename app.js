@@ -1,85 +1,112 @@
-// ====================== 1. Imports ======================
+// ================== ENV CONFIG ==================
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
+
+// ================== IMPORTS ==================
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
-const ExpressError = require("./utils/ExpressError.js");
 const session = require("express-session");
 const flash = require("connect-flash");
+const passport = require("passport");
+const LocalStrategy = require("passport-local");
 
-// ====================== 2. Routers ======================
-const listingsRouter = require("./routes/listing.js");
-const reviewsRouter = require("./routes/review.js");
+// Custom Utilities
+const ExpressError = require("./utils/ExpressError");
 
-// ====================== 3. DB connection + Server start ======================
-const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
+// Models
+const User = require("./models/user");
 
-async function startServer() {
-  try {
-    await mongoose.connect(MONGO_URL); // <--- remove options
-    console.log("✅ Connected to MongoDB");
+// ================== ROUTES ==================
+const listingRouter = require("./routes/listing");
+const reviewRouter = require("./routes/review");
+const userRouter = require("./routes/user");
 
-    app.listen(8080, () => {
-      console.log("🚀 Server running on http://localhost:8080");
-    });
-  } catch (err) {
-    console.log("❌ MongoDB Connection Error:");
-    console.log(err);
-    process.exit(1);
-  }
-}
+// ================== DATABASE CONNECTION ==================
+const MONGO_URL =
+  process.env.MONGO_URL || "mongodb://127.0.0.1:27017/wanderlust";
 
-startServer();
+mongoose
+  .connect(MONGO_URL)
+  .then(() => {
+    console.log("✅ MongoDB Connected");
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB Connection Error:", err);
+  });
 
-// ====================== 4. View engine ======================
-app.engine("ejs", ejsMate);
+// ================== VIEW ENGINE ==================
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+app.engine("ejs", ejsMate);
 
-// ====================== 5. Middleware ======================
+// ================== MIDDLEWARE ==================
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
 
-// ===== Session + Flash =====
+// ================== SESSION CONFIG ==================
 const sessionOptions = {
-  secret: "mysupersecretcode",
+  secret: process.env.SESSION_SECRET || "mysupersecretcode",
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   cookie: {
-    httpOnly: true,
-    expires: Date.now() + 7 * 24 * 60 * 60 * 1000, // 1 week
+    expires: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
     maxAge: 7 * 24 * 60 * 60 * 1000,
+    httpOnly: true,
   },
 };
+
 app.use(session(sessionOptions));
 app.use(flash());
 
-// ===== Flash messages & current user locals =====
+// ================== PASSPORT CONFIG ==================
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+// ================== GLOBAL VARIABLES ==================
 app.use((req, res, next) => {
-  res.locals.currUser = req.user || null; // optional if auth system exists
+  res.locals.currUser = req.user;
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
   next();
 });
 
-// ====================== 6. Routes ======================
+// ================== ROUTES ==================
+app.use("/listings", listingRouter);
+app.use("/listings/:id/reviews", reviewRouter);
+app.use("/", userRouter);
+
+// ================== HOME ROUTE ==================
 app.get("/", (req, res) => {
-  res.send("Hi, I am root");
+  res.redirect("/listings");
 });
 
-app.use("/listings", listingsRouter);
-app.use("/listings/:id/reviews", reviewsRouter);
-
-// ====================== 7. 404 Handler ======================
-app.use((req, res, next) => {
-  next(new ExpressError("Page Not Found", 404));
+// ================== 404 HANDLER ==================
+app.all("*", (req, res, next) => {
+  next(new ExpressError(404, "Page Not Found"));
 });
 
-// ====================== 8. Error Handler ======================
+// ================== ERROR HANDLER ==================
 app.use((err, req, res, next) => {
-  const { statusCode = 500, message = "Something went wrong!" } = err;
-  res.status(statusCode).render("error", { message });
+  let { statusCode = 500, message = "Something went wrong!" } = err;
+  res.status(statusCode).render("error.ejs", {
+    message,
+    statusCode,
+  });
+});
+
+// ================== SERVER ==================
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
