@@ -1,6 +1,6 @@
 # WanderLust – Travel Listing Web Application
 
-## 1. Project Overview.
+## 1. Project Overview..
 
 WanderLust is a full-stack web application where users can explore travel destinations and create their own listings.
 Users can view different places, add new listings and manage travel information.
