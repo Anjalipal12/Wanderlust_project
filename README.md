@@ -1,4 +1,4 @@
-# WanderLust – Travel Listing Web Application
+# WanderLust – Travel Listing Web Application.
 
 ## 1. Project Overview.
 
